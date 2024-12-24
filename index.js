@@ -45,6 +45,30 @@ async function run() {
       const result= await cursor.toArray();
       res.send(result)
     })
+
+    //getbookby id
+    app.get('/book/:id',async(req,res)=>{
+      const id=req.params.id;
+      const query= {_id: new ObjectId(id)}
+      const result= await booksCollection.findOne(query);
+      res.send(result)
+    })
+
+    // update book
+
+    app.patch('/book/:id',async (req,res)=>{
+      const id = req.params.id;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+      const updatedDoc = {
+          $set: req.body
+      }
+
+      const result = await booksCollection.updateOne(filter, updatedDoc, options)
+
+      res.send(result)
+
+    })
    
  
   
