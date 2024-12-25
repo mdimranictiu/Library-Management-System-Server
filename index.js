@@ -69,7 +69,16 @@ async function run() {
       res.send(result)
 
     })
-   
+    // get data via category
+
+    app.get('/books/category',async (req,res)=>{
+      const {category}=req.query;
+      const query = category ? { category: category } : {};
+      const cursor=booksCollection.find(query);
+      const result= await cursor.toArray();
+      res.send(result)
+    })
+
  
   
  
