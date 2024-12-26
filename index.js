@@ -96,7 +96,7 @@ async function run() {
           const result = await cursor.toArray();
           res.send(result);
       } catch (error) {
-          console.error("Error fetching latest visas:", error);
+          console.error("Error fetching latest books:", error);
       }
   });
 
