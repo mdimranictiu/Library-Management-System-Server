@@ -90,6 +90,16 @@ async function run() {
       res.send(result);
     });
 
+    app.get('/latestbooks', async (req, res) => {
+      try {
+          const cursor = booksCollection.find().sort({ _id: -1 }).limit(6);
+          const result = await cursor.toArray();
+          res.send(result);
+      } catch (error) {
+          console.error("Error fetching latest visas:", error);
+      }
+  });
+
     //get book by id
     app.get("/book/:id", async (req, res) => {
       const id = req.params.id;
