@@ -11,7 +11,7 @@ const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster
 
 // Middleware
 app.use(express.json());
-app.use(cors());
+app.use(cors()); 
 
 // Create a MongoClient
 const client = new MongoClient(uri, {
@@ -24,16 +24,16 @@ const client = new MongoClient(uri, {
 
 async function run() {
   try {
-    // await client.connect(); // Ensure MongoDB is connected before defining collections
-    // console.log("Connected to MongoDB successfully!");
-
     const booksCollection = client.db("Library").collection("books");
     const borrowBooksCollection = client.db("Library").collection("borrowBooks");
     const feedbacksCollection = client.db("Library").collection("feedbacks");
     const contactsCollection = client.db("Library").collection("contacts");
     const reportsCollection = client.db("Library").collection("reports");
     const suggestBookCollection = client.db("Library").collection("suggestBook");
-
+    const subscribesCollection = client.db("Library").collection("subscribes");
+    app.get('/',async (req,res)=>{
+      res.send('Server is Running')
+    })
     // JWT Token Generation
     app.post('/jwt', (req, res) => {
       const user = req.body;
@@ -70,6 +70,7 @@ async function run() {
         res.status(500).json({ message: "Error adding book", error });
       }
     });
+
     app.post("/submit/feedback", async (req, res) => {
       const feedback = req.body;
     
@@ -80,6 +81,7 @@ async function run() {
         res.status(500).json({ message: "Error adding feedback", error });
       }
     });
+
     app.post("/submit/contact", async (req, res) => {
       const contact = req.body;
     
@@ -90,6 +92,7 @@ async function run() {
         res.status(500).json({ message: "Error ", error });
       }
     });
+
     app.post("/submit/suggest-book", async (req, res) => {
       const suggestBook = req.body;
     
@@ -100,6 +103,7 @@ async function run() {
         res.status(500).json({ message: "Error ", error });
       }
     });
+
     app.post("/submit/report-issue", async (req, res) => {
       const report = req.body;
     
@@ -110,7 +114,31 @@ async function run() {
         res.status(500).json({ message: "Error ", error });
       }
     });
-///////////////////////////////
+
+    app.get("/newsletter/check", async (req, res) => {
+      const { email } = req.query;
+      const existingSubscriber = await subscribesCollection.findOne({ email });
+    
+      if (existingSubscriber) {
+        return res.json({ subscribed: true });
+      }
+    
+      res.json({ subscribed: false });
+    });
+
+    app.post("/newsletter/subscribe", async (req, res) => {
+      const { email } = req.body;
+      const existingSubscriber = await subscribesCollection.findOne({ email });
+    
+      if (existingSubscriber) {
+        return res.status(400).json({ success: false, message: "Already subscribed" });
+      }
+    
+      await subscribesCollection.insertOne({ email });
+      res.json({ success: true });
+    });
+    
+    ///////////////////////////////
     // Generate Unique Borrowed Book ID
     const generateBorrowedBookId = (bookId, userEmail) => {
       return crypto.createHash("sha256").update(`${bookId}-${userEmail}`).digest("hex");
@@ -228,6 +256,7 @@ async function run() {
 
 run().catch(console.error);
 
+// Start server
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server is running on port http://localhost:${port}`);
 });
